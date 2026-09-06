@@ -12,3 +12,48 @@ The CoerceUnsized trait in Rust is a standard library mechanism that allows
 smart pointers and container types to implicitly convert from a sized type to
 an unsized dynamically sized type (DST), such as turning a Box<[i32; 3]> into a
 Box<[i32]> or a Box<T> into a Box<dyn Trait>.
+
+### UML Diagrams
+
+#### Class Diagram
+
+```
+┌────────────────────────────┐
+│       «trait» Speaker      │
+├────────────────────────────┤
+│ + speak(&self)             │
+└────────────────────────────┘
+            ▲
+            │
+            │ implements
+            │
+┌────────────────────────────┐
+│           Dog              │
+├────────────────────────────┤
+│ - name: String             │
+├────────────────────────────┤
+│ + speak(&self)             │
+└────────────────────────────┘
+            ▲
+            │
+    ┌───────┴───────┐
+    │    Rc<Dog>    │──┐ 1. unsize coercion
+    └───────────────┘  │     (CoerceUnsized)
+        strong         ▼
+            ┌──────────────────────┐
+            │   Rc<dyn Speaker>    │
+            │  (trait object ptr)  │
+            └──────────────────────┘
+                       │
+                       │ 2. Rc::downgrade()
+                       ▼
+            ┌──────────────────────┐
+            │ Weak<dyn Speaker>    │
+            │  (trait object ptr)  │
+            └──────────────────────┘
+                       │
+                       │ 3. .upgrade()
+                       │    Option<Rc<dyn Speaker>>
+                       ▼
+                   .speak()
+```
